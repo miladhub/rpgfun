@@ -1,12 +1,13 @@
 module Main where
 
 import Lib
+import Control.Monad
 
 main :: IO ()
 main =
   do
     putStrLn "Welcome!"
-    loop $ World 0 0 True
+    loop $ World 0 0 True 0 []
     putStrLn "Goodbye!"
 
 data World =
@@ -14,22 +15,49 @@ data World =
       x :: Int
     , y :: Int
     , alive :: Bool
+    , time :: Int
+    , timeouts :: [Timeout]
   }
-  deriving (Eq, Show)
+
+data Timeout =
+  Timeout {
+      name :: String
+    , run :: World -> World
+    , due :: World -> Bool
+  }
+
+instance Show World where
+  show w =
+            "X = "    ++ (show $ x w) ++
+    ", " ++ "Y = "    ++ (show $ y w) ++ 
+    ", " ++ "time = " ++ (show $ time w)
 
 data Event =
-  U | D | L | R | Q
+  U | D | L | R | Q | H
   deriving (Eq, Show, Read)
 
 loop :: World -> IO ()
-loop w0 = do
-  putStrLn $ show w0
+loop w1 = do
+  putStrLn $ show w1
   e <- events
-  let w1 = think w0 e 
-  if alive w1 then
-    loop w1
+  let dues = dueTimeouts w1
+  forM_ (fmap name dues) putStrLn
+  let w2 = runTimeouts w1 dues
+  let w3 = think w2 e 
+  if alive w3 then
+    loop w3 { time = (time w3) + 1 }
   else
     return ()
+
+dueTimeouts :: World -> [Timeout]
+dueTimeouts w =
+  let ts = timeouts w
+  in filter (flip due $ w) ts
+
+runTimeouts :: World -> [Timeout] -> World
+runTimeouts w dues =
+  let runs = fmap run dues
+  in foldl (flip ($)) w runs 
 
 events :: IO [Event]
 events = do
@@ -41,8 +69,16 @@ think :: World -> [Event] -> World
 think w es = foldl apply w es 
 
 apply :: World -> Event -> World
-apply (World x y a) U = World x (y + 1) a
-apply (World x y a) D = World x (y - 1) a
-apply (World x y a) L = World (x - 1) y a
-apply (World x y a) R = World (x + 1) y a
-apply (World x y _) Q = World x y False
+apply w U = w { y = (y w) + 1 }
+apply w D = w { y = (y w) - 1 }
+apply w L = w { x = (x w) - 1 }
+apply w R = w { x = (x w) + 1 }
+apply w Q = w { alive = False }
+apply w H = w { timeouts = [jump w] ++ (timeouts w) }
+
+jump :: World -> Timeout
+jump w0 = Timeout {
+      name = "Jumping..."
+    , run = \w -> w { y = (y w) + 3 }
+    , due = \w -> (time w) - (time w0) == 1
+  }
