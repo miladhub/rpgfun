@@ -33,10 +33,13 @@ handler = loop 100
             Heal n -> loop (health + n)
             Quit   -> return ()
 
+events :: Effect IO Event
+events = lift user
+
 game = do
     (output, input) <- spawn Unbounded
 
-    forkIO $ do runEffect $ lift user >~  toOutput output
+    forkIO $ do runEffect $ events >~  toOutput output
                 performGC
 
     forkIO $ do runEffect $ acidRain  >-> toOutput output
