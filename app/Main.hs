@@ -39,10 +39,10 @@ data Event =
 loop :: World -> IO ()
 loop w1 = do
   putStrLn $ show w1
-  e <- events
   let dues = dueTimeouts w1
   forM_ (fmap name dues) putStrLn
   let w2 = runTimeouts w1 dues
+  e <- events
   let w3 = think w2 e 
   if alive w3 then
     loop w3 { time = (time w3) + 1 }
