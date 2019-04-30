@@ -39,9 +39,7 @@ data Event =
 loop :: World -> IO ()
 loop w1 = do
   putStrLn $ show w1
-  let dues = dueTimeouts w1
-  forM_ (fmap name dues) putStrLn
-  let w2 = runTimeouts w1 dues
+  w2 <- runTimeouts w1
   e <- events
   let w3 = think w2 e 
   if alive w3 then
@@ -49,32 +47,28 @@ loop w1 = do
   else
     return ()
 
-dueTimeouts :: World -> [Timeout]
-dueTimeouts w =
+runTimeouts :: World -> IO World
+runTimeouts w = do
   let ts = timeouts w
-  in filter (flip due $ w) ts
+      dues = filter (flip due $ w) ts
+      runs = fmap run dues
+      newWorld = foldl (flip ($)) w runs
+  forM_ (fmap name dues) putStrLn
+  return newWorld
 
-runTimeouts :: World -> [Timeout] -> World
-runTimeouts w dues =
-  let runs = fmap run dues
-  in foldl (flip ($)) w runs 
-
-events :: IO [Event]
+events :: IO Event
 events = do
   putStr "> "
   l <- getLine
-  return $ fmap (\c -> read [c]) l
+  return $ read l
 
-think :: World -> [Event] -> World
-think w es = foldl apply w es 
-
-apply :: World -> Event -> World
-apply w U = w { y = (y w) + 1 }
-apply w D = w { y = (y w) - 1 }
-apply w L = w { x = (x w) - 1 }
-apply w R = w { x = (x w) + 1 }
-apply w Q = w { alive = False }
-apply w H = w { timeouts = [jump w] ++ (timeouts w) }
+think :: World -> Event -> World
+think w U = w { y = (y w) + 1 }
+think w D = w { y = (y w) - 1 }
+think w L = w { x = (x w) - 1 }
+think w R = w { x = (x w) + 1 }
+think w Q = w { alive = False }
+think w H = w { timeouts = [jump w] ++ (timeouts w) }
 
 jump :: World -> Timeout
 jump w0 = Timeout {
