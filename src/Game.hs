@@ -36,8 +36,8 @@ handler = loop 100
 events :: Effect IO Event
 events = lift user
 
-game = do
-    (output, input) <- spawn Unbounded
+main = do
+    (output, input) <- spawn unbounded
 
     forkIO $ do runEffect $ events >~  toOutput output
                 performGC
