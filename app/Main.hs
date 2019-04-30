@@ -22,7 +22,7 @@ data World =
 data Timeout =
   Timeout {
       name :: String
-    , run :: World -> World
+    , run :: World -> Event
     , due :: World -> Bool
   }
 
@@ -37,27 +37,27 @@ data Event =
   deriving (Eq, Show, Read)
 
 loop :: World -> IO ()
-loop w1 = do
-  putStrLn $ show w1
-  w2 <- runTimeouts w1
-  e <- events
-  let w3 = think w2 e 
-  if alive w3 then
-    loop w3 { time = (time w3) + 1 }
+loop w = do
+  putStrLn $ show w
+  worldEvents <- runTimeouts w
+  userEvent <- userInput
+  let w' = foldl think w (userEvent : worldEvents) 
+  if alive w' then
+    loop w' { time = (time w') + 1 }
   else
     return ()
 
-runTimeouts :: World -> IO World
+runTimeouts :: World -> IO [Event]
 runTimeouts w = do
   let ts = timeouts w
       dues = filter (flip due $ w) ts
       runs = fmap run dues
-      newWorld = foldl (flip ($)) w runs
+      events = runs <*> pure w
   forM_ (fmap name dues) putStrLn
-  return newWorld
+  return events
 
-events :: IO Event
-events = do
+userInput :: IO Event
+userInput = do
   putStr "> "
   l <- getLine
   return $ read l
@@ -73,6 +73,6 @@ think w H = w { timeouts = [jump w] ++ (timeouts w) }
 jump :: World -> Timeout
 jump w0 = Timeout {
       name = "Jumping..."
-    , run = \w -> w { y = (y w) + 3 }
+    , run = \_ -> U
     , due = \w -> (time w) - (time w0) == 1
   }
