@@ -1,5 +1,7 @@
 module RpgFun where
 
+import Control.Monad
+
 data World =
   World {
       x :: Int
@@ -28,7 +30,6 @@ data Event =
 
 userInput :: IO Event
 userInput = do
-  --putStr "> "
   l <- getLine
   return $ read l
 
@@ -40,6 +41,15 @@ think w R = w { x = (x w) + 1 }
 think w Q = w { alive = False }
 think w H = w { timeouts = [jump w] ++ (timeouts w) }
 think w T = w { time = (time w) + 1 }
+
+runTimeouts :: World -> IO [Event]
+runTimeouts w = do
+  let ts = timeouts w
+      dues = filter (flip due $ w) ts
+      runs = fmap run dues
+      events = runs <*> pure w
+  forM_ (fmap name dues) putStrLn
+  return events
 
 jump :: World -> Timeout
 jump w0 = Timeout {

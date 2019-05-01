@@ -19,8 +19,9 @@ handler = loop
   where
     loop w = do
       lift $ putStrLn $ show w
-      e <- await
-      let w' = think w e
+      worldEvents <- lift $ runTimeouts w
+      userEvent <- await
+      let w' = foldl think w (userEvent : worldEvents)
       if alive w' then
         loop w'
       else

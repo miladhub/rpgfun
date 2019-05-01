@@ -17,11 +17,3 @@ loop w = do
   else
     return ()
 
-runTimeouts :: World -> IO [Event]
-runTimeouts w = do
-  let ts = timeouts w
-      dues = filter (flip due $ w) ts
-      runs = fmap run dues
-      events = runs <*> pure w
-  forM_ (fmap name dues) putStrLn
-  return events
