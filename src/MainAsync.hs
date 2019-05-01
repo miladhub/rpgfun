@@ -14,8 +14,8 @@ tick = forever $ do
     lift $ threadDelay 1000000
     yield T
 
-handler :: Consumer Event IO ()
-handler = loop $ World 0 0 True 0 []
+handler :: World -> Consumer Event IO ()
+handler = loop
   where
     loop w = do
       lift $ putStrLn $ show w
@@ -26,8 +26,8 @@ handler = loop $ World 0 0 True 0 []
       else
         return ()
 
-game :: IO ()
-game = do
+game :: World -> IO ()
+game w = do
     (output, input) <- spawn unbounded
 
     forkIO $ do runEffect $ user >~ toOutput output
@@ -36,5 +36,5 @@ game = do
     forkIO $ do runEffect $ tick >-> toOutput output
                 performGC
     
-    runEffect $ fromInput input >-> handler
+    runEffect $ fromInput input >-> (handler w)
 

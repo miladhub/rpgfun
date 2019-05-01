@@ -3,8 +3,8 @@ module MainTurns where
 import RpgFun
 import Control.Monad
 
-game :: IO ()
-game = loop $ World 0 0 True 0 []
+game :: World -> IO ()
+game = loop
 
 loop :: World -> IO ()
 loop w = do
