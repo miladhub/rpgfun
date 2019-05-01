@@ -36,7 +36,8 @@ handler = loop 100
 events :: Effect IO Event
 events = lift user
 
-main = do
+demo :: IO ()
+demo = do
     (output, input) <- spawn unbounded
 
     forkIO $ do runEffect $ events >~  toOutput output

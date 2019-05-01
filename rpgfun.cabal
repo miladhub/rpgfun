@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9c3d1c928a98e403df9bb39ba988da02aeb76ae1fac37ea826581f4c68739beb
+-- hash: 948e031105dfad6be0e6de6fb46df9c773d4864f3a2c48773363fe46de0321e1
 
 name:           rpgfun
 version:        0.1.0.0
@@ -29,6 +29,9 @@ library
   exposed-modules:
       Game
       Lib
+      MainAsync
+      MainTurns
+      RpgFun
   other-modules:
       Paths_rpgfun
   hs-source-dirs:
