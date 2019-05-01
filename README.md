@@ -1,6 +1,6 @@
 # rpgfun
 
-A toy project resembling an command line RPG in Haskell. I have explored (read: stumbled upon) a role-based
+A toy project resembling a command line RPG in Haskell. I have explored (read: stumbled upon) a role-based
 variant and an asyncronous one, using pipes.
 
 ## Build
