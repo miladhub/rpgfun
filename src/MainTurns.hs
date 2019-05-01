@@ -9,9 +9,9 @@ game = loop
 loop :: World -> IO ()
 loop w = do
   putStrLn $ show w
-  worldEvents <- runTimeouts w
+  timeoutEvents <- runTimeouts w
   userEvent <- userInput
-  let w' = foldl think w (userEvent : (worldEvents ++ [T]))
+  let w' = foldl think w $ userEvent : (timeoutEvents ++ [T])
   if alive w' then
     loop w'
   else
