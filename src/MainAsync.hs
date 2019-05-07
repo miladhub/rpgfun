@@ -20,17 +20,14 @@ game w = do
 
 loop :: World -> Consumer Event IO ()
 loop w = do
-  lift $ putStrLn $ show w
-  timeoutEvents <- consumeTimeouts w
+  liftIO $ putStrLn $ show w
+  timeoutEvents <- liftIO $ runTimeouts w
   event <- await
   let w' = foldl think w $ event : timeoutEvents
   if alive w' then
     loop w'
   else
     return ()
-
-consumeTimeouts :: World -> Consumer a IO [Event]
-consumeTimeouts = lift . runTimeouts
 
 user :: Effect IO Event
 user = lift userInput
